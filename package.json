@@ -1,0 +1,33 @@
+{
+  "name": "limacharlie",
+  "version": "1.0.0",
+  "description": "An API for limacharlie.io, a cloud hosted endpoint detection and response platform.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/refractionPOINT/limacharlie-js.git"
+  },
+  "keywords": [
+    "limacharlie",
+    "edr",
+    "endpoint",
+    "security"
+  ],
+  "author": "Refraction Point, Inc",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/refractionPOINT/limacharlie-js/issues"
+  },
+  "homepage": "https://github.com/refractionPOINT/limacharlie-js#readme",
+  "dependencies": {
+    "request": "^2.87.0",
+    "JSONStream": "^1.3.3"
+  },
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "mocha": "^5.2.0"
+  }
+}
