@@ -32,12 +32,31 @@ class Spout {
         .form(spoutConf)
         .on('response', (response) => {
             this._spoutUrl = response.headers.location
-            this._stream = request.get(this._spoutUrl)
-            .pipe(JSONStream.parse())
+            this.resume()
+        })
+    }
 
-            this._stream.on('data', data => {
-                this._dataCb(data)
-            })
+    shutdown() {
+        if(this._stream) {
+            this._stream.abort()
+            this._stream = null
+        }
+    }
+
+    resume() {
+        if(this._stream) {
+            console.error("Stream already running.")
+            throw new Error("Stream already running.")
+        }
+        if(!this._spoutUrl) {
+            console.error("Spout not initialized.")
+            throw new Error("Spout not initialized.")
+        }
+
+        this._stream = request.get(this._spoutUrl)
+        this._stream.pipe(JSONStream.parse())
+        .on('data', data => {
+            this._dataCb(data)
         })
     }
 }
