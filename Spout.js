@@ -28,7 +28,7 @@ class Spout {
         }
 
         request
-        .post(url)
+        .post(url, {followRedirect: false})
         .form(spoutConf)
         .on('response', (response) => {
             this._spoutUrl = response.headers.location
