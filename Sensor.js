@@ -3,11 +3,11 @@ class Sensor {
     constructor(manager, sid) {
         this._man = manager
         this.sid = sid
-        this._invId
+        this._invId = null
     }
 
     setInvId(invId) {
-        this._invId
+        this._invId = invId
     }
 
     task(tasks, invId) {
