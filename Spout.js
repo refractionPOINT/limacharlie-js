@@ -27,13 +27,34 @@ class Spout {
             spoutConf['cat'] = this._cat
         }
 
-        request
-        .post(url, {followRedirect: false})
-        .form(spoutConf)
-        .on('response', (response) => {
-            this._spoutUrl = response.headers.location
-            this.resume()
-        })
+        var isNode = false;
+        if (typeof window === 'undefined') {
+            isNode = true;
+        }
+
+        // The Node HTTP POST and the browser one behave differently.
+        // It is IMPOSSIBLE to prevent the browser from following the
+        // redirect and since a stream is at that redirect we would
+        // hang forever.
+        if(isNode) {
+            request
+            .post(url)
+            .form(spoutConf)
+            .on('response', (response) => {
+                this._spoutUrl = response.headers.location
+                this.resume()
+            })
+        } else {
+            // This does mean that in the browser we cannot stop
+            // and resume the Spout.
+            request
+            .post(url)
+            .form(spoutConf)
+            .pipe(JSONStream.parse())
+            .on('data', data => {
+                this._dataCb(data)
+            })
+        }
     }
 
     shutdown() {
