@@ -2,7 +2,7 @@ const request = require('request')
 const JSONStream = require('JSONStream')
 
 class Spout {
-    constructor(man, dataType, dataCb, invId, tag, cat) {
+    constructor(man, dataType, dataCb, errorCb, invId, tag, cat) {
         this._man = man
         this._dataType = dataType
         this._invId = invId
@@ -37,48 +37,79 @@ class Spout {
         // redirect and since a stream is at that redirect we would
         // hang forever.
         if(isNode) {
-            request
-            .post(url)
-            .form(spoutConf)
-            .on('response', (response) => {
-                this._spoutUrl = response.headers.location
-                this.resume()
-            })
+            try {
+                request
+                .post(url)
+                .form(spoutConf)
+                .on('response', (response) => {
+                    this._spoutUrl = response.headers.location
+                    
+                    try {
+                        this._stream = request.get(this._spoutUrl)
+                    } catch(e) {
+                        if(errorCb) {
+                            errorCb(e)
+                        } else {
+                            console.error(e)
+                        }
+                    }
+
+                    this._stream.pipe(JSONStream.parse())
+                    .on('data', data => {
+                        this._dataCb(data)
+                    })
+                    .on('error', error => {
+                        if(errorCb) {
+                            errorCb(error)
+                        } else {
+                            console.error(error)
+                        }
+                    })
+                })
+            } catch(e) {
+                if(errorCb) {
+                    errorCb(e)
+                } else {
+                    console.error(e)
+                }
+            }
         } else {
-            // This does mean that in the browser we cannot stop
-            // and resume the Spout.
-            request
-            .post(url)
-            .form(spoutConf)
+            try {
+                this._stream = request
+                .post(url)
+                .form(spoutConf)
+            } catch(e) {
+                if(errorCb) {
+                    errorCb(e)
+                } else {
+                    console.error(e)
+                }
+            }
+
+            this._stream
             .pipe(JSONStream.parse())
             .on('data', data => {
                 this._dataCb(data)
+            })
+            .on('error', error => {
+                if(errorCb) {
+                    errorCb(error)
+                } else {
+                    console.error(error)
+                }
             })
         }
     }
 
     shutdown() {
         if(this._stream) {
-            this._stream.abort()
+            try {
+                this._stream.abort()
+            } catch(e) {
+                console.error(e)
+            }
             this._stream = null
         }
-    }
-
-    resume() {
-        if(this._stream) {
-            console.error("Stream already running.")
-            throw new Error("Stream already running.")
-        }
-        if(!this._spoutUrl) {
-            console.error("Spout not initialized.")
-            throw new Error("Spout not initialized.")
-        }
-
-        this._stream = request.get(this._spoutUrl)
-        this._stream.pipe(JSONStream.parse())
-        .on('data', data => {
-            this._dataCb(data)
-        })
     }
 }
 

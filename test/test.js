@@ -70,7 +70,12 @@ describe('Spout()', function() {
         const man = new Manager(OID, API_KEY)
         const spout = new Spout(man, 'event', event => {
             feedData.push(event)
-        })
+        }, error => {
+            console.error(error)
+        },
+        null,   // Investigation ID
+        null,   // Sensor Tag
+        null)   // Detect Category
         
         await sleep(31)
 
@@ -83,13 +88,5 @@ describe('Spout()', function() {
         await sleep(5)
 
         expect(feedData).to.have.lengthOf(0)
-
-        spout.resume()
-
-        await sleep(31)
-
-        expect(feedData).to.not.have.lengthOf(0)
-
-        spout.shutdown()
     })
 })
