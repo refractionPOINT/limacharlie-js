@@ -1,10 +1,10 @@
 {
   "name": "limacharlie",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "An API for limacharlie.io, a cloud hosted endpoint detection and response platform.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
