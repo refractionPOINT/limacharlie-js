@@ -13,6 +13,7 @@ class Manager {
         this._secretApiKey = secretApiKey
         this._jwt = null
         this._invId = null
+        this._lastContinuationToken = null
     }
 
     async _refreshJWT(onSuccess, onError) {
@@ -70,9 +71,23 @@ class Manager {
         return s
     }
 
-    async sensors(invId) {
+    async sensors(invId, isNext) {
         let sensors = []
-        const data = await this._apiCall(`sensors/${this._oid}`, 'GET')
+        let params = {}
+        if(isNext) {
+            if(!this._lastContinuationToken) {
+                return []
+            }
+            params['continuation_token'] = this._lastContinuationToken
+            this._lastContinuationToken = null
+        }
+        
+        const data = await this._apiCall(`sensors/${this._oid}`, 'GET', params)
+
+        if(data.continuation_token) {
+            this._lastContinuationToken = data.continuation_token
+        }
+
         let thisInv = invId
         if(!thisInv) {
             thisInv = this._invId
