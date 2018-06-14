@@ -44,15 +44,14 @@ class Spout {
                 .on('response', (response) => {
                     this._spoutUrl = response.headers.location
                     
-                    try {
-                        this._stream = request.get(this._spoutUrl)
-                    } catch(e) {
+                    this._stream = request.get(this._spoutUrl)
+                    .on('error', error => {
                         if(errorCb) {
-                            errorCb(e)
+                            errorCb(error)
                         } else {
-                            console.error(e)
+                            console.error(error)
                         }
-                    }
+                    })
 
                     this._stream.pipe(JSONStream.parse())
                     .on('data', data => {
@@ -74,17 +73,16 @@ class Spout {
                 }
             }
         } else {
-            try {
-                this._stream = request
-                .post(url)
-                .form(spoutConf)
-            } catch(e) {
+            this._stream = request
+            .post(url)
+            .form(spoutConf)
+            .on('error', error => {
                 if(errorCb) {
-                    errorCb(e)
+                    errorCb(error)
                 } else {
-                    console.error(e)
+                    console.error(error)
                 }
-            }
+            })
 
             this._stream
             .pipe(JSONStream.parse())
