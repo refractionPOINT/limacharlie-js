@@ -53,6 +53,9 @@ class Manager {
                 await this._refreshJWT()
                 return this._apiCall(url, verb, params, true)
             }
+            if(e.error && e.error.error) {
+                throw new Error(e.error.error)
+            }
             throw e
         }
     }
