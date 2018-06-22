@@ -1,6 +1,6 @@
 {
   "name": "limacharlie",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "An API for limacharlie.io, a cloud hosted endpoint detection and response platform.",
   "main": "lib/index.js",
   "scripts": {
@@ -32,6 +32,7 @@
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-preset-es2015": "^6.24.1",
+    "babel-preset-react": "^6.24.1",
     "chai": "^4.1.2",
     "mocha": "^5.2.0"
   }

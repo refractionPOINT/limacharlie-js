@@ -1,11 +1,11 @@
-import Manager from './Manager';
-import Sensor from './Sensor';
-import Spout from './Spout';
-import Webhook from './Webhook';
+const Manager = require('./Manager');
+const Sensor = require('./Sensor');
+const Spout = require('./Spout');
+const Webhook = require('./Webhook');
 
-export {
-    Manager,
-    Sensor,
-    Spout,
-    Webhook,
+module.exports = {
+    Manager: Manager,
+    Sensor: Sensor,
+    Spout: Spout,
+    Webhook: Webhook,
 }
