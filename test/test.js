@@ -1,7 +1,5 @@
 const expect = require('chai').expect
-const Manager = require('../Manager')
-const Spout = require('../Spout')
-const Webhook = require('../Webhook')
+const {Manager, Spout, Webhook} = require('../lib/index.js')
 
 const OID = ''
 const API_KEY = ''
