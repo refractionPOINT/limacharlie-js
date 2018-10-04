@@ -16,8 +16,13 @@ class Spout {
 
     let url = `https://output.limacharlie.io/output/${this._man._oid}`
     let spoutConf = {
-      api_key: this._man._secretApiKey,
       type: this._dataType,
+    }
+    
+    if(this._man._secretApiKey) {
+      spoutConf["api_key"] = this._man._secretApiKey
+    } else {
+      spoutConf["jwt"] = this._man._jwt
     }
 
     if(this._invId) {

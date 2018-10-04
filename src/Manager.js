@@ -8,10 +8,10 @@ const API_VERSION = "v1"
 const HTTP_UNAUTHORIZED = 401
 
 class Manager {
-  constructor(oid, secretApiKey, invId, isInteractive) {
+  constructor(oid, secretApiKey, invId, isInteractive, jwt) {
     this._oid = oid
     this._secretApiKey = secretApiKey
-    this._jwt = null
+    this._jwt = jwt
     this._invId = invId
     this._isInteractive = isInteractive
     if(this._isInteractive && !this._invId) {
@@ -22,7 +22,7 @@ class Manager {
     // If the onAuthFailure callback is set, the internal renewal of
     // the JWT using the API key is disable. We assume the callback is
     // responsible for updating the JWT and setting it in manager._jwt.
-    // THe callback receives a single parameter, a reference to
+    // The async callback receives no parameters, a reference to
     // this Manager. After callback, the API call will automatically
     // be retried like the normal API Key based behavior.
     this.onAuthFailure = null
@@ -30,10 +30,14 @@ class Manager {
 
   async _refreshJWT() {
     try{
+      if(!this._secretApiKey) {
+        throw new Error("API key not set.")
+      }
       const data = await request(`https://app.limacharlie.io/jwt?oid=${this._oid}&secret=${this._secretApiKey}`, {json: true})
       this._jwt = data.jwt
       return true
     } catch(e) {
+      this._jwt = null
       // eslint-disable-next-line no-console
       console.error(`Failed to refresh the JWT: ${e}`)
       return false
@@ -64,7 +68,7 @@ class Manager {
     } catch(e) {
       if(e.statusCode === HTTP_UNAUTHORIZED && !isNoRetry) {
         if(this.onAuthFailure) {
-          this.onAuthFailure(this)
+          await this.onAuthFailure()
         } else {
           await this._refreshJWT()
         }
