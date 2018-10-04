@@ -1,105 +1,132 @@
-const request = require('request-promise')
-const Sensor = require('./Sensor')
+const request = require("request-promise")
+const Sensor = require("./Sensor")
+const Spout = require("./Spout")
 
-
-const ROOT_URL = 'https://api.limacharlie.io'
-const API_VERSION = 'v1'
+const ROOT_URL = "https://api.limacharlie.io"
+const API_VERSION = "v1"
 
 const HTTP_UNAUTHORIZED = 401
 
 class Manager {
-    constructor(oid, secretApiKey) {
-        this._oid = oid
-        this._secretApiKey = secretApiKey
-        this._jwt = null
-        this._invId = null
-        this._lastContinuationToken = null
+  constructor(oid, secretApiKey, invId, isInteractive) {
+    this._oid = oid
+    this._secretApiKey = secretApiKey
+    this._jwt = null
+    this._invId = invId
+    this._isInteractive = isInteractive
+    if(this._isInteractive && !this._invId) {
+      throw new Error("Investigation ID must be set for interactive mode to be eneabled.")
+    }
+    this._spout = null
+    this._lastContinuationToken = null
+    // If the onAuthFailure callback is set, the internal renewal of
+    // the JWT using the API key is disable. We assume the callback is
+    // responsible for updating the JWT and setting it in manager._jwt.
+    // THe callback receives a single parameter, a reference to
+    // this Manager. After callback, the API call will automatically
+    // be retried like the normal API Key based behavior.
+    this.onAuthFailure = null
+  }
+
+  async _refreshJWT() {
+    try{
+      const data = await request(`https://app.limacharlie.io/jwt?oid=${this._oid}&secret=${this._secretApiKey}`, {json: true})
+      this._jwt = data.jwt
+      return true
+    } catch(e) {
+      // eslint-disable-next-line no-console
+      console.error(`Failed to refresh the JWT: ${e}`)
+      return false
+    }
+  }
+
+  _restCall(url, verb, params) {
+    if(!params) {
+      params = {}
+    }
+    return request(`${ROOT_URL}/${API_VERSION}/${url}`, {
+      headers: {
+        Authorization: `bearer ${this._jwt}`
+      },
+      method: verb,
+      form: params, qsStringifyOptions: {arrayFormat: "repeat"},
+      json: true,
+    })
+  }
+
+  async _apiCall(url, verb, params, isNoRetry) {
+    if(!this._jwt) {
+      await this._refreshJWT()
     }
 
-    async _refreshJWT(onSuccess, onError) {
-        try{
-            const data = await request(`https://app.limacharlie.io/jwt?oid=${this._oid}&secret=${this._secretApiKey}`, {json: true})
-            this._jwt = data.jwt
-            return true
-        } catch(e) {
-            console.error(`Failed to refresh the JWT: ${e}`)
-            return false
+    try {
+      return await this._restCall(url, verb, params)
+    } catch(e) {
+      if(e.statusCode === HTTP_UNAUTHORIZED && !isNoRetry) {
+        if(this.onAuthFailure) {
+          this.onAuthFailure(this)
+        } else {
+          await this._refreshJWT()
         }
+        return this._apiCall(url, verb, params, true)
+      }
+      if(e.error && e.error.error) {
+        throw new Error(e.error.error)
+      }
+      throw e
     }
-
-    _restCall(url, verb, params) {
-        if(!params) {
-            params = {}
-        }
-        return request(`${ROOT_URL}/${API_VERSION}/${url}`, {
-            headers: {
-                Authorization: `bearer ${this._jwt}`
-            },
-            method: verb,
-            form: params, qsStringifyOptions: {arrayFormat: 'repeat'},
-            json: true,
-        })
+  }
+  
+  refreshSpout() {
+    if(!this._isInteractive) {
+      return
     }
-
-    async _apiCall(url, verb, params, isNoRetry) {
-        if(!this._jwt) {
-            await this._refreshJWT()
-        }
-
-        try {
-            return await this._restCall(url, verb, params)
-        } catch(e) {
-            if(e.statusCode === HTTP_UNAUTHORIZED && !isNoRetry) {
-                await this._refreshJWT()
-                return this._apiCall(url, verb, params, true)
-            }
-            if(e.error && e.error.error) {
-                throw new Error(e.error.error)
-            }
-            throw e
-        }
+    if(this._spout) {
+      this._spout.shutdown()
+      this._spout = null
     }
+    this._spout = Spout(this, "event", null, null, this._invId, null, null)
+  }
 
-    testAuth() {
-        return this._refreshJWT()
+  testAuth() {
+    return this._refreshJWT()
+  }
+
+  sensor(sid, invId) {
+    let s = new Sensor(this, sid)
+    if(invId) {
+      s.setInvId(invId)
+    } else if(this._invId) {
+      s.setInvId(this._invId)
     }
+    return s
+  }
 
-    sensor(sid, invId) {
-        let s = new Sensor(this, sid)
-        if(invId) {
-            s.setInvId(invId)
-        } else if(this._invId) {
-            s.setInvId(this._invId)
-        }
-        return s
+  async sensors(invId, isNext) {
+    let params = {}
+    if(isNext) {
+      if(!this._lastContinuationToken) {
+        return []
+      }
+      params["continuation_token"] = this._lastContinuationToken
+      this._lastContinuationToken = null
     }
-
-    async sensors(invId, isNext) {
-        let sensors = []
-        let params = {}
-        if(isNext) {
-            if(!this._lastContinuationToken) {
-                return []
-            }
-            params['continuation_token'] = this._lastContinuationToken
-            this._lastContinuationToken = null
-        }
         
-        const data = await this._apiCall(`sensors/${this._oid}`, 'GET', params)
+    const data = await this._apiCall(`sensors/${this._oid}`, "GET", params)
 
-        if(data.continuation_token) {
-            this._lastContinuationToken = data.continuation_token
-        }
-
-        let thisInv = invId
-        if(!thisInv) {
-            thisInv = this._invId
-        }
-
-        return data.sensors.map(s => {
-            return this.sensor(s.sid, thisInv)
-        })
+    if(data.continuation_token) {
+      this._lastContinuationToken = data.continuation_token
     }
+
+    let thisInv = invId
+    if(!thisInv) {
+      thisInv = this._invId
+    }
+
+    return data.sensors.map(s => {
+      return this.sensor(s.sid, thisInv)
+    })
+  }
 }
 
 module.exports = Manager
