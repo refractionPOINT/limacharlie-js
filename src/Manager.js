@@ -8,7 +8,7 @@ const API_VERSION = "v1"
 const HTTP_UNAUTHORIZED = 401
 
 class Manager {
-  constructor(oid, secretApiKey, invId, isInteractive, jwt) {
+  constructor(oid, secretApiKey, invId, isInteractive, jwt, onAuthFailure) {
     this._oid = oid
     this._secretApiKey = secretApiKey
     this._jwt = jwt
@@ -25,7 +25,11 @@ class Manager {
     // The async callback receives no parameters, a reference to
     // this Manager. After callback, the API call will automatically
     // be retried like the normal API Key based behavior.
-    this.onAuthFailure = null
+    this.onAuthFailure = onAuthFailure
+    
+    if(this._isInteractive) {
+      this.refreshSpout()
+    }
   }
 
   async _refreshJWT() {
@@ -89,7 +93,7 @@ class Manager {
       this._spout.shutdown()
       this._spout = null
     }
-    this._spout = Spout(this, "event", null, null, this._invId, null, null)
+    this._spout = new Spout(this, "event", null, null, this._invId, null, null)
   }
 
   testAuth() {

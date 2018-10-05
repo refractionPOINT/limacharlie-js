@@ -121,7 +121,7 @@ class Spout {
   
   _processData(data) {
     if("__trace" in data) {
-      if(data.__trace.contains("dropped")) {
+      if(data.__trace.includes("dropped")) {
         this.dropped += data.n
       }
     } else {
