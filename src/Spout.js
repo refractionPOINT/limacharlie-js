@@ -11,6 +11,7 @@ class Spout {
     this._spoutUrl = null
     this._dataCb = dataCb
     this.dropped = 0
+    this.hasConnected = false
     this._specificCallbacks = {}
     this._cleanupTimer = setInterval(() => {this._cleanup()}, 30000)
 
@@ -123,6 +124,8 @@ class Spout {
     if("__trace" in data) {
       if(data.__trace.includes("dropped")) {
         this.dropped += data.n
+      } else if(data.__trace === "connected") {
+        this.hasConnected = true
       }
     } else {
       let tracking = data.routing.investigation_id
