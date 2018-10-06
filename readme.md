@@ -2,6 +2,15 @@
 
 Simple JS API for LimaCharlie.io, a cloud hosted endpoint security platform.
 
+## Install
+```
+npm install limacharlie
+```
+
+```
+const {Manager, Spout, Webhook} = require('limacharlie')
+```
+
 ## Interfaces
 
 ### Manager
