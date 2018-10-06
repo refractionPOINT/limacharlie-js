@@ -36,7 +36,7 @@ class Sensor {
     this._man._spout.registerSpecificCallback(trackingId, 60, (data) => {
       responseCb(data)
     })
-    return await this.task(tasks)
+    return await this.task(tasks, trackingId)
   }
 
   async tag(tag, ttl) {
