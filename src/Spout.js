@@ -2,12 +2,13 @@ const request = require("request")
 const JSONStream = require("JSONStream")
 
 class Spout {
-  constructor(man, dataType, dataCb, errorCb, invId, tag, cat) {
+  constructor(man, dataType, dataCb, errorCb, invId, tag, cat, sid) {
     this._man = man
     this._dataType = dataType
     this._invId = invId
     this._tag = tag
     this._cat = cat
+    this._sid = sid
     this._spoutUrl = null
     this._dataCb = dataCb
     this.dropped = 0
@@ -34,6 +35,9 @@ class Spout {
     }
     if(this._cat) {
       spoutConf["cat"] = this._cat
+    }
+    if(this._sid) {
+      spoutConf["sid"] = this._sid
     }
 
     var isNode = false
