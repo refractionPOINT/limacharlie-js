@@ -61,6 +61,8 @@ class Spout {
               .on("error", error => {
                 if(errorCb) {
                   errorCb(error)
+                } else if(this._man.onError) {
+                  this._man.onError(error)
                 } else {
                   // eslint-disable-next-line no-console
                   console.error(error)
@@ -74,6 +76,8 @@ class Spout {
               .on("error", error => {
                 if(errorCb) {
                   errorCb(error)
+                } else if(this._man.onError) {
+                  this._man.onError(error)
                 } else {
                   // eslint-disable-next-line no-console
                   console.error(error)
@@ -82,10 +86,12 @@ class Spout {
           })
       } catch(e) {
         if(errorCb) {
-          errorCb(e)
+          errorCb(error)
+        } else if(this._man.onError) {
+          this._man.onError(error)
         } else {
           // eslint-disable-next-line no-console
-          console.error(e)
+          console.error(error)
         }
       }
     } else {
@@ -95,6 +101,8 @@ class Spout {
         .on("error", error => {
           if(errorCb) {
             errorCb(error)
+          } else if(this._man.onError) {
+            this._man.onError(error)
           } else {
             // eslint-disable-next-line no-console
             console.error(error)
@@ -109,6 +117,8 @@ class Spout {
         .on("error", error => {
           if(errorCb) {
             errorCb(error)
+          } else if(this._man.onError) {
+            this._man.onError(error)
           } else {
             // eslint-disable-next-line no-console
             console.error(error)
