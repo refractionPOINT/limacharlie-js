@@ -8,7 +8,7 @@ const API_VERSION = "v1"
 const HTTP_UNAUTHORIZED = 401
 
 class Manager {
-  constructor(oid, secretApiKey, invId, isInteractive, jwt, onAuthFailure) {
+  constructor(oid, secretApiKey, invId, isInteractive, jwt, onAuthFailure, onError) {
     this._oid = oid
     this._secretApiKey = secretApiKey
     this._jwt = jwt
@@ -26,6 +26,7 @@ class Manager {
     // this Manager. After callback, the API call will automatically
     // be retried like the normal API Key based behavior.
     this.onAuthFailure = onAuthFailure
+    this.onError = onError
     
     if(this._isInteractive) {
       this.refreshSpout()
@@ -79,7 +80,13 @@ class Manager {
         return this._apiCall(url, verb, params, true)
       }
       if(e.error && e.error.error) {
+        if(this.onError) {
+          this.onError(e.error.error)
+        }
         throw new Error(e.error.error)
+      }
+      if(this.onError) {
+        this.onError(e)
       }
       throw e
     }
@@ -93,7 +100,7 @@ class Manager {
     // We use a temporary variable so we can do a hot swap and never
     // be without an active spout.
     let tmpSpout = this._spout
-    this._spout = new Spout(this, "event", null, null, this._invId, null, null)
+    this._spout = new Spout(this, "event", null, null, this._invId, null, null, null)
     
     if(tmpSpout) {
       // Move over the registrations in the previous spout to the new one.

@@ -2,12 +2,13 @@ const request = require("request")
 const JSONStream = require("JSONStream")
 
 class Spout {
-  constructor(man, dataType, dataCb, errorCb, invId, tag, cat) {
+  constructor(man, dataType, dataCb, errorCb, invId, tag, cat, sid) {
     this._man = man
     this._dataType = dataType
     this._invId = invId
     this._tag = tag
     this._cat = cat
+    this._sid = sid
     this._spoutUrl = null
     this._dataCb = dataCb
     this.dropped = 0
@@ -35,6 +36,9 @@ class Spout {
     if(this._cat) {
       spoutConf["cat"] = this._cat
     }
+    if(this._sid) {
+      spoutConf["sid"] = this._sid
+    }
 
     var isNode = false
     if (typeof window === "undefined") {
@@ -57,6 +61,8 @@ class Spout {
               .on("error", error => {
                 if(errorCb) {
                   errorCb(error)
+                } else if(this._man.onError) {
+                  this._man.onError(error)
                 } else {
                   // eslint-disable-next-line no-console
                   console.error(error)
@@ -70,6 +76,8 @@ class Spout {
               .on("error", error => {
                 if(errorCb) {
                   errorCb(error)
+                } else if(this._man.onError) {
+                  this._man.onError(error)
                 } else {
                   // eslint-disable-next-line no-console
                   console.error(error)
@@ -78,10 +86,12 @@ class Spout {
           })
       } catch(e) {
         if(errorCb) {
-          errorCb(e)
+          errorCb(error)
+        } else if(this._man.onError) {
+          this._man.onError(error)
         } else {
           // eslint-disable-next-line no-console
-          console.error(e)
+          console.error(error)
         }
       }
     } else {
@@ -91,6 +101,8 @@ class Spout {
         .on("error", error => {
           if(errorCb) {
             errorCb(error)
+          } else if(this._man.onError) {
+            this._man.onError(error)
           } else {
             // eslint-disable-next-line no-console
             console.error(error)
@@ -105,6 +117,8 @@ class Spout {
         .on("error", error => {
           if(errorCb) {
             errorCb(error)
+          } else if(this._man.onError) {
+            this._man.onError(error)
           } else {
             // eslint-disable-next-line no-console
             console.error(error)
