@@ -151,6 +151,14 @@ class Manager {
       return this.sensor(s.sid, thisInv)
     })
   }
+  
+  async getAvailableEvents() {
+    return (await this._apiCall("events", "GET")).events
+  }
+  
+  async getAutoComplete() {
+    return await this._apiCall("autocomplete/task", "GET")
+  }
 }
 
 module.exports = Manager
