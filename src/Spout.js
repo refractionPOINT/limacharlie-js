@@ -86,12 +86,12 @@ class Spout {
           })
       } catch(e) {
         if(errorCb) {
-          errorCb(error)
+          errorCb(e)
         } else if(this._man.onError) {
-          this._man.onError(error)
+          this._man.onError(e)
         } else {
           // eslint-disable-next-line no-console
-          console.error(error)
+          console.error(e)
         }
       }
     } else {

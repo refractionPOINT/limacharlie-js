@@ -66,6 +66,12 @@ class Sensor {
     const data = await this._man._apiCall(this.sid, "GET")
     return (data.online && !("error" in data.online)) ? true : false
   }
+  
+  async getHistoricEvents(params) {
+    params[ "stream_type" ] = "event"
+    let data = await this._man._apiCall(`insight/sensors/${this.sid}`, "GET", params)
+    return data.events
+  }
 }
 
 module.exports = Sensor

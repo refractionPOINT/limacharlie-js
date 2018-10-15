@@ -53,14 +53,20 @@ class Manager {
     if(!params) {
       params = {}
     }
-    return request(`${ROOT_URL}/${API_VERSION}/${url}`, {
+    let req = {
       headers: {
         Authorization: `bearer ${this._jwt}`
       },
       method: verb,
-      form: params, qsStringifyOptions: {arrayFormat: "repeat"},
+      qsStringifyOptions: {arrayFormat: "repeat"},
       json: true,
-    })
+    }
+    if(verb === "GET") {
+      req[ "qs" ] = params
+    } else {
+      req[ "form" ] = params
+    }
+    return request(`${ROOT_URL}/${API_VERSION}/${url}`, req)
   }
 
   async _apiCall(url, verb, params, isNoRetry) {
@@ -88,7 +94,7 @@ class Manager {
       if(this.onError) {
         this.onError(e)
       }
-      throw e
+      //throw e
     }
   }
   
@@ -158,6 +164,14 @@ class Manager {
   
   async getAutoComplete() {
     return await this._apiCall("autocomplete/task", "GET")
+  }
+  
+  async isInsightEnabled() {
+    let insightConfig = await this._apiCall(`insight/${this._oid}`, "GET")
+    if("insight_bucket" in insightConfig) {
+      return true
+    }
+    return false
   }
 }
 
