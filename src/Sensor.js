@@ -1,3 +1,4 @@
+const zlib = require('zlib')
 const uuid = require("uuid4")
 
 class Sensor {
@@ -9,6 +10,17 @@ class Sensor {
 
   setInvId(invId) {
     this._invId = invId
+  }
+  
+  async _unzip(data) {
+    return new Promise(function(resolve, reject) {
+      zlib.unzip(data, (err, buffer) => {
+        if(err) {
+          return reject(err)
+        }
+        resolve(buffer.toString())
+      })
+    })
   }
 
   async task(tasks, invId) {
@@ -68,9 +80,12 @@ class Sensor {
   }
   
   async getHistoricEvents(params) {
-    params[ "stream_type" ] = "event"
-    params[ "_timeout" ] = "20" 
+    params["stream_type"] = "event"
+    params["is_compressed"] = "true"
+    params["_timeout"] = "20"
     let data = await this._man._apiCall(`insight/sensors/${this.sid}`, "GET", params)
+    data.events = await this._unzip(Buffer.from(data.events, 'base64'))
+    data.events = JSON.parse(data.events)
     return data.events
   }
 }
