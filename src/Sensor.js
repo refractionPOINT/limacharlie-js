@@ -83,7 +83,7 @@ class Sensor {
     params["stream_type"] = "event"
     params["is_compressed"] = "true"
     params["_timeout"] = "20"
-    let data = await this._man._apiCall(`insight/sensors/${this.sid}`, "GET", params)
+    let data = await this._man._apiCall(`insight/${this._man._oid}/${this.sid}`, "GET", params)
     data.events = await this._unzip(Buffer.from(data.events, 'base64'))
     data.events = JSON.parse(data.events)
     return data.events
