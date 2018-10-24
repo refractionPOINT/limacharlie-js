@@ -80,7 +80,6 @@ class Sensor {
   }
   
   async getHistoricEvents(params) {
-    params["stream_type"] = "event"
     params["is_compressed"] = "true"
     params["_timeout"] = "20"
     let data = await this._man._apiCall(`insight/${this._man._oid}/${this.sid}`, "GET", params)
