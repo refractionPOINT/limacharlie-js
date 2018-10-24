@@ -173,6 +173,14 @@ class Manager {
     }
     return false
   }
+  
+  async getHistoricDetections(params) {
+    params["is_compressed"] = "true"
+    let data = await this._man._apiCall(`insight/${this._man._oid}/detections`, "GET", params)
+    data.events = await this._unzip(Buffer.from(data.detects, "base64"))
+    data.events = JSON.parse(data.events)
+    return data.events
+  }
 }
 
 module.exports = Manager

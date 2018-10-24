@@ -81,9 +81,8 @@ class Sensor {
   
   async getHistoricEvents(params) {
     params["is_compressed"] = "true"
-    params["_timeout"] = "20"
     let data = await this._man._apiCall(`insight/${this._man._oid}/${this.sid}`, "GET", params)
-    data.events = await this._unzip(Buffer.from(data.events, 'base64'))
+    data.events = await this._unzip(Buffer.from(data.events, "base64"))
     data.events = JSON.parse(data.events)
     return data.events
   }
