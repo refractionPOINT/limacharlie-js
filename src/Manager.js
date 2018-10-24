@@ -1,4 +1,5 @@
 const request = require("request-promise")
+const zlib = require('zlib')
 const Sensor = require("./Sensor")
 const Spout = require("./Spout")
 
@@ -98,6 +99,17 @@ class Manager {
     }
   }
   
+  async _unzip(data) {
+    return new Promise(function(resolve, reject) {
+      zlib.unzip(data, (err, buffer) => {
+        if(err) {
+          return reject(err)
+        }
+        resolve(buffer.toString())
+      })
+    })
+  }
+  
   refreshSpout() {
     if(!this._isInteractive) {
       return
@@ -176,7 +188,7 @@ class Manager {
   
   async getHistoricDetections(params) {
     params["is_compressed"] = "true"
-    let data = await this._man._apiCall(`insight/${this._man._oid}/detections`, "GET", params)
+    let data = await this._apiCall(`insight/${this._oid}/detections`, "GET", params)
     data.events = await this._unzip(Buffer.from(data.detects, "base64"))
     data.events = JSON.parse(data.events)
     return data.events
