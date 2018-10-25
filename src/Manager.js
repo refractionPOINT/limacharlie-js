@@ -180,7 +180,7 @@ class Manager {
   
   async isInsightEnabled() {
     let insightConfig = await this._apiCall(`insight/${this._oid}`, "GET")
-    if("insight_bucket" in insightConfig) {
+    if("insight_bucket" in insightConfig && insightConfig["insight_bucket"]) {
       return true
     }
     return false
