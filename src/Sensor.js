@@ -27,7 +27,7 @@ class Sensor {
     }
     return await this._man._apiCall(this.sid, "POST", req)
   }
-  
+
   async request(tasks, responseCb) {
     if(!this._man._isInteractive) {
       throw new Error("Manager provided was not created with isInteractive set to true, cannot track responses.")
@@ -66,13 +66,18 @@ class Sensor {
     const data = await this._man._apiCall(this.sid, "GET")
     return (data.online && !("error" in data.online)) ? true : false
   }
-  
+
   async getHistoricEvents(params) {
     params["is_compressed"] = "true"
     let data = await this._man._apiCall(`insight/${this._man._oid}/${this.sid}`, "GET", params)
     data.events = await this._man._unzip(Buffer.from(data.events, "base64"))
     data.events = JSON.parse(data.events)
     return data.events
+  }
+
+  async getHistoricOverview(params) {
+    let data = await this._man._apiCall(`insight/${this._man._oid}/${this.sid}/overview`, "GET", params)
+    return data.overview
   }
 }
 
