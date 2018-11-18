@@ -28,7 +28,7 @@ class Manager {
     // be retried like the normal API Key based behavior.
     this.onAuthFailure = onAuthFailure
     this.onError = onError
-    
+
     if(this._isInteractive) {
       this.refreshSpout()
     }
@@ -70,7 +70,7 @@ class Manager {
     return request(`${ROOT_URL}/${API_VERSION}/${url}`, req)
   }
 
-  async _apiCall(url, verb, params, isNoRetry) {
+  async _apiCall(url, verb, params, isNoRetry, isThrowError) {
     if(!this._jwt) {
       await this._refreshJWT()
     }
@@ -95,10 +95,12 @@ class Manager {
       if(this.onError) {
         this.onError(e)
       }
-      //throw e
+      if(isThrowError) {
+        throw e
+      }
     }
   }
-  
+
   async _unzip(data) {
     return new Promise(function(resolve, reject) {
       zlib.unzip(data, (err, buffer) => {
@@ -109,21 +111,21 @@ class Manager {
       })
     })
   }
-  
+
   refreshSpout() {
     if(!this._isInteractive) {
       return
     }
-    
+
     // We use a temporary variable so we can do a hot swap and never
     // be without an active spout.
     let tmpSpout = this._spout
     this._spout = new Spout(this, "event", null, null, this._invId, null, null, null)
-    
+
     if(tmpSpout) {
       // Move over the registrations in the previous spout to the new one.
       this._spout._specificCallbacks = tmpSpout._specificCallbacks
-      
+
       // Now we can close it down safely.
       tmpSpout.shutdown()
       tmpSpout = null
@@ -153,7 +155,7 @@ class Manager {
       params["continuation_token"] = this._lastContinuationToken
       this._lastContinuationToken = null
     }
-        
+
     const data = await this._apiCall(`sensors/${this._oid}`, "GET", params)
 
     if(data.continuation_token) {
@@ -169,15 +171,15 @@ class Manager {
       return this.sensor(s.sid, thisInv)
     })
   }
-  
+
   async getAvailableEvents() {
     return (await this._apiCall("events", "GET")).events
   }
-  
+
   async getAutoComplete() {
     return await this._apiCall("autocomplete/task", "GET")
   }
-  
+
   async isInsightEnabled() {
     let insightConfig = await this._apiCall(`insight/${this._oid}`, "GET")
     if("insight_bucket" in insightConfig && insightConfig["insight_bucket"]) {
@@ -185,7 +187,7 @@ class Manager {
     }
     return false
   }
-  
+
   async getHistoricDetections(params) {
     params["is_compressed"] = "true"
     let data = await this._apiCall(`insight/${this._oid}/detections`, "GET", params)
