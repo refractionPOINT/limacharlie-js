@@ -11,7 +11,7 @@ class Sensor {
     this._invId = invId
   }
 
-  async task(tasks, invId) {
+  async task(tasks, invId, isThrowError) {
     if(!Array.isArray(tasks)) {
       tasks = [tasks]
     }
@@ -25,10 +25,10 @@ class Sensor {
     if(thisInv) {
       req["investigation_id"] = thisInv
     }
-    return await this._man._apiCall(this.sid, "POST", req)
+    return await this._man._apiCall(this.sid, "POST", req, false, isThrowError)
   }
 
-  async request(tasks, responseCb) {
+  async request(tasks, responseCb, onError) {
     if(!this._man._isInteractive) {
       throw new Error("Manager provided was not created with isInteractive set to true, cannot track responses.")
     }
@@ -36,6 +36,13 @@ class Sensor {
     this._man._spout.registerSpecificCallback(trackingId, 60, (data) => {
       responseCb(data)
     })
+    if(onError) {
+      try {
+        return await this.task(tasks, trackingId, true)
+      } catch(e) {
+        onError(e)
+      }
+    }
     return await this.task(tasks, trackingId)
   }
 
