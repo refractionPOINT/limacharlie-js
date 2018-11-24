@@ -189,11 +189,23 @@ class Manager {
   }
 
   async getHistoricDetections(params) {
+    if(!params) {
+      params = {}
+    }
     params["is_compressed"] = "true"
     let data = await this._apiCall(`insight/${this._oid}/detections`, "GET", params)
     data.events = await this._unzip(Buffer.from(data.detects, "base64"))
     data.events = JSON.parse(data.events)
     return data.events
+  }
+
+  async getObjectInformation(objType, objName, params) {
+    if(!params) {
+      params = {}
+    }
+    params["name"] = objName
+    let data = await this._apiCall(`insight/${this._oid}/objects/${objType}`, "GET", params)
+    return data
   }
 }
 
