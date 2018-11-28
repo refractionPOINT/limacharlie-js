@@ -207,6 +207,30 @@ class Manager {
     let data = await this._apiCall(`insight/${this._oid}/objects/${objType}`, "GET", params)
     return data
   }
+
+  async getObjectBatchInformation(objects, params) {
+    if(!params) {
+      params = {}
+    }
+    params["objects"] = JSON.stringify(objects)
+    let data = await this._apiCall(`insight/${this._oid}/objects`, "POST", params)
+    return data
+  }
+
+  async getObjectBaseline() {
+    let winBin = "ntdll.dll"
+    let macBin = "launchd"
+    let objects = await this.getObjectBatchInformation({
+      file_name: [
+        winBin,
+        macBin,
+      ]
+    })
+    return {
+      windows:{last_1_days: objects.last_1_days.file_name[winBin], last_7_days: objects.last_7_days.file_name[winBin], last_30_days: objects.last_30_days.file_name[winBin]},
+      mac:{last_1_days: objects.last_1_days.file_name[macBin], last_7_days: objects.last_7_days.file_name[macBin], last_30_days: objects.last_30_days.file_name[macBin]},
+    }
+  }
 }
 
 module.exports = Manager
