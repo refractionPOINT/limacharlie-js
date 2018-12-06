@@ -7,6 +7,7 @@ const ROOT_URL = "https://api.limacharlie.io"
 const API_VERSION = "v1"
 
 const HTTP_UNAUTHORIZED = 401
+const HTTP_BAD_REQUEST = 400
 
 class Manager {
   constructor(oid, secretApiKey, invId, isInteractive, jwt, onAuthFailure, onError) {
@@ -50,6 +51,10 @@ class Manager {
     }
   }
 
+  sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
   _restCall(url, verb, params) {
     if(!params) {
       params = {}
@@ -78,6 +83,10 @@ class Manager {
     try {
       return await this._restCall(url, verb, params)
     } catch(e) {
+      let errMessage = e
+      if(e.error && e.error.error) {
+        errMessage = e.error.error
+      }
       if(e.statusCode === HTTP_UNAUTHORIZED && !isNoRetry) {
         if(this.onAuthFailure) {
           await this.onAuthFailure()
@@ -85,18 +94,19 @@ class Manager {
           await this._refreshJWT()
         }
         return this._apiCall(url, verb, params, true)
-      }
-      if(e.error && e.error.error) {
-        if(this.onError) {
-          this.onError(e.error.error)
+      } else if(e.statusCode === HTTP_BAD_REQUEST && !isNoRetry) {
+        if(errMessage.includes("quota")) {
+          await this.sleep(5 * 1000)
+          return this._apiCall(url, verb, params, false)
         }
-        throw new Error(e.error.error)
       }
+
       if(this.onError) {
-        this.onError(e)
+        this.onError(errMessage)
       }
+
       if(isThrowError) {
-        throw e
+        throw new Error(errMessage)
       }
     }
   }
