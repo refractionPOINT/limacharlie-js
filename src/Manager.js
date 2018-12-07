@@ -83,9 +83,11 @@ class Manager {
     try {
       return await this._restCall(url, verb, params)
     } catch(e) {
-      let errMessage = e
+      let errMessage = null
       if(e.error && e.error.error) {
         errMessage = e.error.error
+      } else {
+        errMessage = e.toString()
       }
       if(e.statusCode === HTTP_UNAUTHORIZED && !isNoRetry) {
         if(this.onAuthFailure) {
