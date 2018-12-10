@@ -109,6 +109,10 @@ class Sensor {
     let data = await this._man._apiCall(`insight/${this._man._oid}/${this.sid}/overview`, "GET", params)
     return data.overview
   }
+
+  async getTrafficStats(start, end) {
+    return await this._man.getTrafficStats(start, end, this.sid)
+  }
 }
 
 module.exports = Sensor

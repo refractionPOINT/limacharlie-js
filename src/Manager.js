@@ -243,6 +243,46 @@ class Manager {
       mac:{last_1_days: objects.last_1_days.file_name[macBin], last_7_days: objects.last_7_days.file_name[macBin], last_30_days: objects.last_30_days.file_name[macBin]},
     }
   }
+
+  async getTrafficBreakdown(start, end) {
+    let data = await this._apiCall(`insight/${this._oid}/traffic/breakdown`, "GET", {
+      start: start,
+      end: end,
+    })
+    return data
+  }
+
+  async getTrafficStats(start, end, sid) {
+    let params = {
+      start: start,
+      end: end,
+    }
+    if(sid) {
+      params["sid"] = sid
+    }
+    let data = await this._apiCall(`insight/${this._oid}/traffic/stats`, "GET", params)
+    return data
+  }
+
+  async getDetectBreakdown(start, end) {
+    let data = await this._apiCall(`insight/${this._oid}/detections/breakdown`, "GET", {
+      start: start,
+      end: end,
+    })
+    return data
+  }
+
+  async getDetectStats(start, end, sid) {
+    let params = {
+      start: start,
+      end: end,
+    }
+    if(sid) {
+      params["sid"] = sid
+    }
+    let data = await this._apiCall(`insight/${this._oid}/detections/stats`, "GET", params)
+    return data
+  }
 }
 
 module.exports = Manager
