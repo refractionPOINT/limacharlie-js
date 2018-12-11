@@ -7,6 +7,7 @@ const ROOT_URL = "https://api.limacharlie.io"
 const API_VERSION = "v1"
 
 const HTTP_UNAUTHORIZED = 401
+const HTTP_BAD_REQUEST = 400
 
 class Manager {
   constructor(oid, secretApiKey, invId, isInteractive, jwt, onAuthFailure, onError) {
@@ -50,6 +51,10 @@ class Manager {
     }
   }
 
+  sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
   _restCall(url, verb, params) {
     if(!params) {
       params = {}
@@ -78,6 +83,12 @@ class Manager {
     try {
       return await this._restCall(url, verb, params)
     } catch(e) {
+      let errMessage = null
+      if(e.error && e.error.error) {
+        errMessage = e.error.error
+      } else {
+        errMessage = e.toString()
+      }
       if(e.statusCode === HTTP_UNAUTHORIZED && !isNoRetry) {
         if(this.onAuthFailure) {
           await this.onAuthFailure()
@@ -85,18 +96,19 @@ class Manager {
           await this._refreshJWT()
         }
         return this._apiCall(url, verb, params, true)
-      }
-      if(e.error && e.error.error) {
-        if(this.onError) {
-          this.onError(e.error.error)
+      } else if(e.statusCode === HTTP_BAD_REQUEST && !isNoRetry) {
+        if(errMessage.includes("quota")) {
+          await this.sleep(5 * 1000)
+          return this._apiCall(url, verb, params, false)
         }
-        throw new Error(e.error.error)
       }
+
       if(this.onError) {
-        this.onError(e)
+        this.onError(errMessage)
       }
+
       if(isThrowError) {
-        throw e
+        throw new Error(errMessage)
       }
     }
   }
@@ -189,11 +201,87 @@ class Manager {
   }
 
   async getHistoricDetections(params) {
+    if(!params) {
+      params = {}
+    }
     params["is_compressed"] = "true"
     let data = await this._apiCall(`insight/${this._oid}/detections`, "GET", params)
     data.events = await this._unzip(Buffer.from(data.detects, "base64"))
     data.events = JSON.parse(data.events)
     return data.events
+  }
+
+  async getObjectInformation(objType, objName, params) {
+    if(!params) {
+      params = {}
+    }
+    params["name"] = objName
+    let data = await this._apiCall(`insight/${this._oid}/objects/${objType}`, "GET", params)
+    return data
+  }
+
+  async getObjectBatchInformation(objects, params) {
+    if(!params) {
+      params = {}
+    }
+    params["objects"] = JSON.stringify(objects)
+    let data = await this._apiCall(`insight/${this._oid}/objects`, "POST", params)
+    return data
+  }
+
+  async getObjectBaseline() {
+    let winBin = "ntdll.dll"
+    let macBin = "launchd"
+    let objects = await this.getObjectBatchInformation({
+      file_name: [
+        winBin,
+        macBin,
+      ]
+    })
+    return {
+      windows:{last_1_days: objects.last_1_days.file_name[winBin], last_7_days: objects.last_7_days.file_name[winBin], last_30_days: objects.last_30_days.file_name[winBin]},
+      mac:{last_1_days: objects.last_1_days.file_name[macBin], last_7_days: objects.last_7_days.file_name[macBin], last_30_days: objects.last_30_days.file_name[macBin]},
+    }
+  }
+
+  async getTrafficBreakdown(start, end) {
+    let data = await this._apiCall(`insight/${this._oid}/traffic/breakdown`, "GET", {
+      start: start,
+      end: end,
+    })
+    return data
+  }
+
+  async getTrafficStats(start, end, sid) {
+    let params = {
+      start: start,
+      end: end,
+    }
+    if(sid) {
+      params["sid"] = sid
+    }
+    let data = await this._apiCall(`insight/${this._oid}/traffic/stats`, "GET", params)
+    return data
+  }
+
+  async getDetectBreakdown(start, end) {
+    let data = await this._apiCall(`insight/${this._oid}/detections/breakdown`, "GET", {
+      start: start,
+      end: end,
+    })
+    return data
+  }
+
+  async getDetectStats(start, end, sid) {
+    let params = {
+      start: start,
+      end: end,
+    }
+    if(sid) {
+      params["sid"] = sid
+    }
+    let data = await this._apiCall(`insight/${this._oid}/detections/stats`, "GET", params)
+    return data
   }
 }
 

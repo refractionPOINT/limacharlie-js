@@ -5,6 +5,7 @@ class Sensor {
     this._man = manager
     this.sid = sid
     this._invId = null
+    this._info = null
   }
 
   setInvId(invId) {
@@ -46,6 +47,27 @@ class Sensor {
     return await this.task(tasks, trackingId)
   }
 
+  async isWindows() {
+    if(!this._info) {
+      await this.getInfo()
+    }
+    return this._info.plat === 0x10000000
+  }
+
+  async isLinux() {
+    if(!this._info) {
+      await this.getInfo()
+    }
+    return this._info.plat === 0x20000000
+  }
+
+  async isMac() {
+    if(!this._info) {
+      await this.getInfo()
+    }
+    return this._info.plat === 0x30000000
+  }
+
   async tag(tag, ttl) {
     return await this._man._apiCall(`${this.sid}/tags`, "POST", {
       tags: tag,
@@ -66,6 +88,7 @@ class Sensor {
 
   async getInfo() {
     const data = await this._man._apiCall(this.sid, "GET")
+    this._info = data.info
     return data.info
   }
 
@@ -85,6 +108,10 @@ class Sensor {
   async getHistoricOverview(params) {
     let data = await this._man._apiCall(`insight/${this._man._oid}/${this.sid}/overview`, "GET", params)
     return data.overview
+  }
+
+  async getTrafficStats(start, end) {
+    return await this._man.getTrafficStats(start, end, this.sid)
   }
 }
 
