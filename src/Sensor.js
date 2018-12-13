@@ -97,7 +97,7 @@ class Sensor {
 
   async isOnline() {
     const data = await this._man._apiCall(this.sid, "GET")
-    return (data.online && !("error" in data.online)) ? true : false
+    return (data && data.online && !("error" in data.online)) ? true : false
   }
 
   async getHistoricEvents(params) {
