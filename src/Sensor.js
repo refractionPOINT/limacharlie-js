@@ -47,23 +47,26 @@ class Sensor {
     return await this.task(tasks, trackingId)
   }
 
-  async isWindows() {
+  isWindows() {
     if(!this._info) {
-      await this.getInfo()
+      this.getInfo()
+      return null
     }
     return this._info.plat === 0x10000000
   }
 
-  async isLinux() {
+  isLinux() {
     if(!this._info) {
-      await this.getInfo()
+      this.getInfo()
+      return null
     }
     return this._info.plat === 0x20000000
   }
 
-  async isMac() {
+  isMac() {
     if(!this._info) {
-      await this.getInfo()
+      this.getInfo()
+      return null
     }
     return this._info.plat === 0x30000000
   }
@@ -94,7 +97,7 @@ class Sensor {
 
   async isOnline() {
     const data = await this._man._apiCall(this.sid, "GET")
-    return (data.online && !("error" in data.online)) ? true : false
+    return (data && data.online && !("error" in data.online)) ? true : false
   }
 
   async getHistoricEvents(params) {

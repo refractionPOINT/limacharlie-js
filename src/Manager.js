@@ -252,6 +252,18 @@ class Manager {
     return data
   }
 
+  async getOnlineStats(start, end, sid) {
+    let params = {
+      start: start,
+      end: end,
+    }
+    if(sid) {
+      params["sid"] = sid
+    }
+    let data = await this._apiCall(`insight/${this._oid}/online/stats`, "GET", params)
+    return data
+  }
+
   async getTrafficStats(start, end, sid) {
     let params = {
       start: start,
