@@ -71,6 +71,14 @@ class Sensor {
     return this._info.plat === 0x30000000
   }
 
+  isAndroid() {
+    if(!this._info) {
+      this.getInfo()
+      return null
+    }
+    return this._info.plat === 0x50000000
+  }
+
   async tag(tag, ttl) {
     return await this._man._apiCall(`${this.sid}/tags`, "POST", {
       tags: tag,
