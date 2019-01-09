@@ -66,6 +66,7 @@ class Manager {
       method: verb,
       qsStringifyOptions: {arrayFormat: "repeat"},
       json: true,
+      timeout: 10 * 1000,
     }
     if(verb === "GET") {
       req[ "qs" ] = params
@@ -83,6 +84,7 @@ class Manager {
     try {
       return await this._restCall(url, verb, params)
     } catch(e) {
+      console.error(e)
       let errMessage = null
       if(e.error && e.error.error) {
         errMessage = e.error.error
@@ -101,6 +103,10 @@ class Manager {
           await this.sleep(5 * 1000)
           return this._apiCall(url, verb, params, false)
         }
+      } else if(errMessage.includes("RequestError") && !isNoRetry) {
+        // Looks like a failure to connect or at the gateway, just retry once.
+        await this.sleep(1 * 1000)
+        return this._apiCall(url, verb, params, false)
       }
 
       if(this.onError) {
@@ -194,7 +200,7 @@ class Manager {
 
   async isInsightEnabled() {
     let insightConfig = await this._apiCall(`insight/${this._oid}`, "GET")
-    if("insight_bucket" in insightConfig && insightConfig["insight_bucket"]) {
+    if(insightConfig && ("insight_bucket" in insightConfig) && insightConfig["insight_bucket"]) {
       return true
     }
     return false
@@ -293,6 +299,24 @@ class Manager {
       params["sid"] = sid
     }
     let data = await this._apiCall(`insight/${this._oid}/detections/stats`, "GET", params)
+    return data
+  }
+
+  async getIncidents(params) {
+    if(!params) {
+      params = {}
+    }
+    params["is_compressed"] = "true"
+    let data = await this._apiCall(`incident/${this._oid}`, "GET", params)
+    data.incidents = await this._unzip(Buffer.from(data.incidents, "base64"))
+    data.incidents = JSON.parse(data.incidents)
+    return data.incidents
+  }
+
+  async replicantRequest(replicantName, params) {
+    let data = await this._apiCall(`replicant/${this._oid}/${replicantName}`, "POST", {
+      request_data: btoa(JSON.stringify(params)),
+    })
     return data
   }
 }
