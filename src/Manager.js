@@ -2,6 +2,7 @@ const request = require("request-promise")
 const zlib = require('zlib')
 const Sensor = require("./Sensor")
 const Spout = require("./Spout")
+const Incident = require("./Incident")
 
 const ROOT_URL = "https://api.limacharlie.io"
 const API_VERSION = "v1"
@@ -147,6 +148,12 @@ class Manager {
       // Now we can close it down safely.
       tmpSpout.shutdown()
       tmpSpout = null
+    }
+  }
+
+  shutdown() {
+    if(this._spout) {
+      this._spout.shutdown()
     }
   }
 
@@ -310,7 +317,7 @@ class Manager {
     let data = await this._apiCall(`incident/${this._oid}`, "GET", params)
     data.incidents = await this._unzip(Buffer.from(data.incidents, "base64"))
     data.incidents = JSON.parse(data.incidents)
-    return data.incidents
+    return Object.values(data.incidents).map(i => new Incident(this, i))
   }
 
   async replicantRequest(replicantName, params) {
@@ -318,6 +325,11 @@ class Manager {
       request_data: btoa(JSON.stringify(params)),
     })
     return data
+  }
+
+  async getAvailableReplicants() {
+    let data = await this._apiCall(`replicant/${this._oid}`, "GET")
+    return data.replicants
   }
 }
 

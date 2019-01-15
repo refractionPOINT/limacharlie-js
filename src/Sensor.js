@@ -79,6 +79,13 @@ class Sensor {
     return this._info.plat === 0x50000000
   }
 
+  async hostname() {
+    if(!this._info) {
+      await this.getInfo()
+    }
+    return this._info.hostname
+  }
+
   async tag(tag, ttl) {
     return await this._man._apiCall(`${this.sid}/tags`, "POST", {
       tags: tag,
