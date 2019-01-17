@@ -205,6 +205,13 @@ class Manager {
     return await this._apiCall("autocomplete/task", "GET")
   }
 
+  async getSensorsWithHostname(hostnamePrefix) {
+    let data = await this._apiCall(`hostnames/${this._oid}`, "GET", {
+      hostname: hostnamePrefix
+    })
+    return data.sid
+  }
+
   async isInsightEnabled() {
     let insightConfig = await this._apiCall(`insight/${this._oid}`, "GET")
     if(insightConfig && ("insight_bucket" in insightConfig) && insightConfig["insight_bucket"]) {
