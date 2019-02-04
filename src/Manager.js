@@ -41,7 +41,16 @@ class Manager {
       if(!this._secretApiKey) {
         throw new Error("API key not set.")
       }
-      const data = await request(`https://app.limacharlie.io/jwt?oid=${this._oid}&secret=${this._secretApiKey}`, {json: true})
+      let req = {
+        method: "POST",
+        json: true,
+        timeout: 5 * 1000,
+        form: {
+          oid: this._oid,
+          secret: this._secretApiKey,
+        }
+      }
+      const data = await request(`https://app.limacharlie.io/jwt`, req)
       this._jwt = data.jwt
       return true
     } catch(e) {
