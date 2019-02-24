@@ -336,9 +336,10 @@ class Manager {
     return Object.values(data.incidents).map(i => new Incident(this, i))
   }
 
-  async replicantRequest(replicantName, params) {
+  async replicantRequest(replicantName, params, isSynchronous) {
     let data = await this._apiCall(`replicant/${this._oid}/${replicantName}`, "POST", {
       request_data: btoa(JSON.stringify(params)),
+      is_async: !isSynchronous,
     })
     return data
   }
