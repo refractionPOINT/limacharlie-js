@@ -123,6 +123,13 @@ class Sensor {
     return data.events
   }
 
+  async getSpecificEvent(atom, before) {
+    let data = await this._man._apiCall(`insight/${this._man._oid}/${this.sid}/${atom}`, "GET", {
+      before: before,
+    })
+    return data
+  }
+
   async getHistoricOverview(params) {
     let data = await this._man._apiCall(`insight/${this._man._oid}/${this.sid}/overview`, "GET", params)
     return data.overview

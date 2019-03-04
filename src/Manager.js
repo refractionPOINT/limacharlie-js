@@ -41,7 +41,16 @@ class Manager {
       if(!this._secretApiKey) {
         throw new Error("API key not set.")
       }
-      const data = await request(`https://app.limacharlie.io/jwt?oid=${this._oid}&secret=${this._secretApiKey}`, {json: true})
+      let req = {
+        method: "POST",
+        json: true,
+        timeout: 5 * 1000,
+        form: {
+          oid: this._oid,
+          secret: this._secretApiKey,
+        }
+      }
+      const data = await request(`https://app.limacharlie.io/jwt`, req)
       this._jwt = data.jwt
       return true
     } catch(e) {
@@ -56,7 +65,10 @@ class Manager {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  _restCall(url, verb, params) {
+  _restCall(url, verb, params, timeout) {
+    if(!timeout) {
+      timeout = 10 * 1000
+    }
     if(!params) {
       params = {}
     }
@@ -77,13 +89,13 @@ class Manager {
     return request(`${ROOT_URL}/${API_VERSION}/${url}`, req)
   }
 
-  async _apiCall(url, verb, params, isNoRetry, isThrowError) {
+  async _apiCall(url, verb, params, isNoRetry, isThrowError, timeout) {
     if(!this._jwt) {
       await this._refreshJWT()
     }
 
     try {
-      return await this._restCall(url, verb, params)
+      return await this._restCall(url, verb, params, timeout)
     } catch(e) {
       console.error(e)
       let errMessage = null
@@ -327,10 +339,11 @@ class Manager {
     return Object.values(data.incidents).map(i => new Incident(this, i))
   }
 
-  async replicantRequest(replicantName, params) {
+  async replicantRequest(replicantName, params, isSynchronous) {
     let data = await this._apiCall(`replicant/${this._oid}/${replicantName}`, "POST", {
       request_data: btoa(JSON.stringify(params)),
-    })
+      is_async: !isSynchronous,
+    }, false, false, 30 * 1000)
     return data
   }
 
