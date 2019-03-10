@@ -351,6 +351,11 @@ class Manager {
     let data = await this._apiCall(`replicant/${this._oid}`, "GET")
     return data.replicants
   }
+
+  async getOrgInfo() {
+    let data = await this._apiCall(`orgs/${this._oid}`, "GET")
+    return data
+  }
 }
 
 module.exports = Manager
