@@ -237,7 +237,7 @@ class Manager {
       params = {}
     }
     params["is_compressed"] = "true"
-    let data = await this._apiCall(`insight/${this._oid}/detections`, "GET", params)
+    let data = await this._apiCall(`insight/${this._oid}/detections`, "GET", params, false, false, 30 * 1000)
     data.events = await this._unzip(Buffer.from(data.detects, "base64"))
     data.events = JSON.parse(data.events)
     return data.events
