@@ -356,6 +356,37 @@ class Manager {
     let data = await this._apiCall(`orgs/${this._oid}`, "GET")
     return data
   }
+
+  async getInsightLogs(start, end, sid) {
+    let params = {
+      start: start,
+      end: end,
+    }
+    if(sid) {
+      params["sid"] = sid
+    }
+    let data = await this._apiCall(`insight/${this._oid}/detections/stats`, "GET", params)
+    return data
+  }
+
+  async getIngestionKeys() {
+    let data = await this._apiCall(`insight/${this._oid}/ingestion_keys`, "GET", {})
+    return data.keys
+  }
+
+  async setIngestionKey(name) {
+    let data = await this._apiCall(`insight/${this._oid}/ingestion_keys`, "POST", {
+      name: name,
+    })
+    return data
+  }
+
+  async delIngestionKey(name) {
+    let data = await this._apiCall(`insight/${this._oid}/ingestion_keys`, "DELETE", {
+      name: name,
+    })
+    return data
+  }
 }
 
 module.exports = Manager
