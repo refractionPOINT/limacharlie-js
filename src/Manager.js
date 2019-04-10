@@ -357,15 +357,37 @@ class Manager {
     return data
   }
 
-  async getInsightLogs(start, end, sid) {
+  async getInsightLogs(start, end, source, hint) {
     let params = {
       start: start,
       end: end,
     }
-    if(sid) {
-      params["sid"] = sid
+    if(source) {
+      params["source"] = source
     }
-    let data = await this._apiCall(`insight/${this._oid}/detections/stats`, "GET", params)
+    if(hint) {
+      params["hint"] = hint
+    }
+    let data = await this._apiCall(`insight/${this._oid}/logs`, "GET", params)
+    return data
+  }
+
+  async getInsightLogPayload(payloadID, records, with_raw) {
+    let params = {
+      records: records,
+      with_raw: with_raw ? 'on' : 'off',
+    }
+    let data = await this._apiCall(`insight/${this._oid}/logs/payloads/${payloadID}`, "GET", params)
+    return data
+  }
+
+  async getInsightLogFlow(flowID, start, end, with_raw) {
+    let params = {
+      start: start,
+      end: end,
+      with_raw: with_raw ? 'on' : 'off',
+    }
+    let data = await this._apiCall(`insight/${this._oid}/logs/flows/${flowID}`, "GET", params)
     return data
   }
 

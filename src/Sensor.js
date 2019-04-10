@@ -126,7 +126,7 @@ class Sensor {
   async getSpecificEvent(atom, before) {
     let data = await this._man._apiCall(`insight/${this._man._oid}/${this.sid}/${atom}`, "GET", {
       before: before,
-    })
+    }, false, false, 30 * 1000)
     return data
   }
 
