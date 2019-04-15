@@ -376,9 +376,14 @@ class Manager {
     let params = {
       records: records,
       with_raw: with_raw ? 'on' : 'off',
+      is_compressed: 'true',
     }
     let data = await this._apiCall(`insight/${this._oid}/logs/payloads/${payloadID}`, "GET", params)
-    return data
+
+    data.logs = await this._unzip(Buffer.from(data.logs, "base64"))
+    data.logs = JSON.parse(data.logs)
+
+    return data.logs
   }
 
   async getInsightLogFlow(flowID, start, end, with_raw) {
@@ -386,9 +391,14 @@ class Manager {
       start: start,
       end: end,
       with_raw: with_raw ? 'on' : 'off',
+      is_compressed: 'true',
     }
     let data = await this._apiCall(`insight/${this._oid}/logs/flows/${flowID}`, "GET", params)
-    return data
+
+    data.flows = await this._unzip(Buffer.from(data.flows, "base64"))
+    data.flows = JSON.parse(data.flows)
+
+    return data.flows
   }
 
   async getIngestionKeys() {
