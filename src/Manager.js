@@ -369,7 +369,7 @@ class Manager {
       params["hint"] = hint
     }
     let data = await this._apiCall(`insight/${this._oid}/logs`, "GET", params)
-    return data
+    return data.logs
   }
 
   async getInsightLogPayload(payloadID, records, with_raw) {
