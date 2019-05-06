@@ -419,6 +419,11 @@ class Manager {
     })
     return data
   }
+
+  async getUsage() {
+    let data = await this._apiCall(`usage/${this._oid}`, "GET", {})
+    return data.usage
+  }
 }
 
 module.exports = Manager
