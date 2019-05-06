@@ -421,7 +421,7 @@ class Manager {
   }
 
   async getUsage() {
-    let data = await this._apiCall(`usage/${this._oid}`, "GET", {})
+    let data = await this._apiCall(`usage/${this._oid}`, "GET", {}, false, false, 20 * 1000)
     return data.usage
   }
 }
