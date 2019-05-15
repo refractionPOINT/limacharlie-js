@@ -424,6 +424,11 @@ class Manager {
     let data = await this._apiCall(`usage/${this._oid}`, "GET", {}, false, false, 20 * 1000)
     return data.usage
   }
+
+  async getDrRules() {
+    let data = await this._apiCall(`rules/${this._oid}`, "GET", {})
+    return data
+  }
 }
 
 module.exports = Manager
