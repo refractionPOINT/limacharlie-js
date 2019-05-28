@@ -429,6 +429,18 @@ class Manager {
     let data = await this._apiCall(`rules/${this._oid}`, "GET", {})
     return data
   }
+
+  async getObjectsTimeline(objects, params) {
+    if(!params) {
+      params = {}
+    }
+    params["is_compressed"] = "true"
+    params["objects"] = JSON.stringify(objects)
+    let data = await this._apiCall(`insight/${this._oid}/objects_timeline`, "POST", params)
+    data.timeline = await this._unzip(Buffer.from(data.timeline, "base64"))
+    data.timeline = JSON.parse(data.timeline)
+    return data.timeline
+  }
 }
 
 module.exports = Manager
