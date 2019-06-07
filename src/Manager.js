@@ -439,7 +439,9 @@ class Manager {
     let data = await this._apiCall(`insight/${this._oid}/objects_timeline`, "POST", params)
     data.timeline = await this._unzip(Buffer.from(data.timeline, "base64"))
     data.timeline = JSON.parse(data.timeline)
-    return data.timeline
+    data.prevalence = await this._unzip(Buffer.from(data.prevalence, "base64"))
+    data.prevalence = JSON.parse(data.prevalence)
+    return data
   }
 }
 
