@@ -443,6 +443,18 @@ class Manager {
     data.prevalence = JSON.parse(data.prevalence)
     return data
   }
+
+  async getObjectUsage(objType, objName, params) {
+    if(!params) {
+      params = {}
+    }
+    params["is_compressed"] = "true"
+    params["name"] = objName
+    let data = await this._apiCall(`insight/${this._oid}/object_usage/${objType}`, "GET", params)
+    data.usage = await this._unzip(Buffer.from(data.usage, "base64"))
+    data.usage = JSON.parse(data.usage)
+    return data
+  }
 }
 
 module.exports = Manager
