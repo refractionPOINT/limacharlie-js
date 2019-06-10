@@ -444,12 +444,14 @@ class Manager {
     return data
   }
 
-  async getObjectUsage(objType, objName, params) {
+  async getObjectUsage(objType, objName, startTime, endTime, params) {
     if(!params) {
       params = {}
     }
     params["is_compressed"] = "true"
     params["name"] = objName
+    params["start"] = startTime
+    params["end"] = endTime
     let data = await this._apiCall(`insight/${this._oid}/object_usage/${objType}`, "GET", params)
     data.usage = await this._unzip(Buffer.from(data.usage, "base64"))
     data.usage = JSON.parse(data.usage)
