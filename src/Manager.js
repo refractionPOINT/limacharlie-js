@@ -455,6 +455,8 @@ class Manager {
     let data = await this._apiCall(`insight/${this._oid}/object_usage/${objType}`, "GET", params)
     data.usage = await this._unzip(Buffer.from(data.usage, "base64"))
     data.usage = JSON.parse(data.usage)
+    data.logs = await this._unzip(Buffer.from(data.logs, "base64"))
+    data.logs = JSON.parse(data.logs)
     return data
   }
 }
