@@ -425,8 +425,12 @@ class Manager {
     return data.usage
   }
 
-  async getDrRules() {
-    let data = await this._apiCall(`rules/${this._oid}`, "GET", {})
+  async getDrRules(namespace) {
+    let req = {}
+    if(namespace) {
+      req['namespace'] = namespace
+    }
+    let data = await this._apiCall(`rules/${this._oid}`, "GET", req)
     return data
   }
 
