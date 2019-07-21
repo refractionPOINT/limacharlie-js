@@ -65,7 +65,7 @@ class Manager {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  _restCall(url, verb, params, timeout) {
+  _restCall(url, verb, params, timeout, altRoot) {
     if(!timeout) {
       timeout = 10 * 1000
     }
@@ -86,16 +86,19 @@ class Manager {
     } else {
       req[ "form" ] = params
     }
+    if(altRoot) {
+      return request(`${altRoot}/${url}`, req)
+    }
     return request(`${ROOT_URL}/${API_VERSION}/${url}`, req)
   }
 
-  async _apiCall(url, verb, params, isNoRetry, isThrowError, timeout) {
+  async _apiCall(url, verb, params, isNoRetry, isThrowError, timeout, altRoot) {
     if(!this._jwt) {
       await this._refreshJWT()
     }
 
     try {
-      return await this._restCall(url, verb, params, timeout)
+      return await this._restCall(url, verb, params, timeout, altRoot)
     } catch(e) {
       console.error(e)
       let errMessage = null
@@ -461,6 +464,11 @@ class Manager {
     data.usage = JSON.parse(data.usage)
     data.logs = await this._unzip(Buffer.from(data.logs, "base64"))
     data.logs = JSON.parse(data.logs)
+    return data
+  }
+
+  async whoAmI() {
+    let data = await this._apiCall(`who`, "GET", {}, false, false, null, ROOT_URL)
     return data
   }
 }
