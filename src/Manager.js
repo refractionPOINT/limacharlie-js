@@ -2,7 +2,7 @@ const request = require("request-promise")
 const zlib = require('zlib')
 const Sensor = require("./Sensor")
 const Spout = require("./Spout")
-const Incident = require("./Incident")
+const Job = require("./Job")
 
 const ROOT_URL = "https://api.limacharlie.io"
 const API_VERSION = "v1"
@@ -331,15 +331,15 @@ class Manager {
     return data
   }
 
-  async getIncidents(params) {
+  async getJobs(params) {
     if(!params) {
       params = {}
     }
     params["is_compressed"] = "true"
-    let data = await this._apiCall(`incident/${this._oid}`, "GET", params)
-    data.incidents = await this._unzip(Buffer.from(data.incidents, "base64"))
-    data.incidents = JSON.parse(data.incidents)
-    return Object.values(data.incidents).map(i => new Incident(this, i))
+    let data = await this._apiCall(`job/${this._oid}`, "GET", params)
+    data.jobs = await this._unzip(Buffer.from(data.jobs, "base64"))
+    data.jobs = JSON.parse(data.jobs)
+    return Object.values(data.jobs).map(i => new Job(this, i))
   }
 
   async replicantRequest(replicantName, params, isSynchronous) {
