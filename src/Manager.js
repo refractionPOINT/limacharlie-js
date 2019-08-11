@@ -342,6 +342,14 @@ class Manager {
     return Object.values(data.jobs).map(i => new Job(this, i))
   }
 
+  async getJob(jid) {
+    params["is_compressed"] = "true"
+    let data = await this._apiCall(`job/${this._oid}/${jid}`, "GET", {})
+    data.job = await this._unzip(Buffer.from(data.jobs, "base64"))
+    data.job = JSON.parse(data.job)
+    return new Job(this, data.job)
+  }
+
   async replicantRequest(replicantName, params, isSynchronous) {
     let data = await this._apiCall(`replicant/${this._oid}/${replicantName}`, "POST", {
       request_data: btoa(JSON.stringify(params)),
