@@ -3,6 +3,7 @@ const zlib = require('zlib')
 const Sensor = require("./Sensor")
 const Spout = require("./Spout")
 const Job = require("./Job")
+const Payloads = require("./Payload")
 
 const ROOT_URL = "https://api.limacharlie.io"
 const API_VERSION = "v1"
@@ -34,6 +35,7 @@ class Manager {
     if(this._isInteractive) {
       this.refreshSpout()
     }
+    this.payloads = new Payloads(this)
   }
 
   async _refreshJWT() {
