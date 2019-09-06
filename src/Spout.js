@@ -16,7 +16,7 @@ class Spout {
     this._specificCallbacks = {}
     this._cleanupTimer = setInterval(() => {this._cleanup()}, 30000)
 
-    let url = `https://output.limacharlie.io/output/${this._man._oid}`
+    let url = `https://stream.limacharlie.io/${this._man._oid}`
     let spoutConf = {
       type: this._dataType,
     }
@@ -54,35 +54,19 @@ class Spout {
         request
           .post(url)
           .form(spoutConf)
-          .on("response", (response) => {
-            this._spoutUrl = response.headers.location
-                    
-            this._stream = request.get(this._spoutUrl)
-              .on("error", error => {
-                if(errorCb) {
-                  errorCb(error)
-                } else if(this._man.onError) {
-                  this._man.onError(error)
-                } else {
-                  // eslint-disable-next-line no-console
-                  console.error(error)
-                }
-              })
-
-            this._stream.pipe(JSONStream.parse())
-              .on("data", data => {
-                this._processData(data)
-              })
-              .on("error", error => {
-                if(errorCb) {
-                  errorCb(error)
-                } else if(this._man.onError) {
-                  this._man.onError(error)
-                } else {
-                  // eslint-disable-next-line no-console
-                  console.error(error)
-                }
-              })
+          .pipe(JSONStream.parse())
+          .on("data", data => {
+            this._processData(data)
+          })
+          .on("error", error => {
+            if(errorCb) {
+              errorCb(error)
+            } else if(this._man.onError) {
+              this._man.onError(error)
+            } else {
+              // eslint-disable-next-line no-console
+              console.error(error)
+            }
           })
       } catch(e) {
         if(errorCb) {
@@ -108,8 +92,6 @@ class Spout {
             console.error(error)
           }
         })
-
-      this._stream
         .pipe(JSONStream.parse())
         .on("data", data => {
           this._processData(data)
