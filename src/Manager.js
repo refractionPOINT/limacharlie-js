@@ -137,13 +137,13 @@ class Manager {
     }
   }
 
-  async _unzip(data) {
+  async _unzip(data, isBinary) {
     return new Promise(function(resolve, reject) {
       zlib.unzip(data, (err, buffer) => {
         if(err) {
           return reject(err)
         }
-        resolve(buffer.toString())
+        resolve(buffer.toString(isBinary ? 'binary' : 'utf8'))
       })
     })
   }
@@ -404,7 +404,7 @@ class Manager {
     let data = await this._apiCall(`insight/${this._oid}/logs/originals/${payloadID}`, "GET", params)
 
     if(data.payload) {
-      data.payload = await this._unzip(Buffer.from(data.payload, "base64"))
+      data.payload = await this._unzip(Buffer.from(data.payload, "base64"), true)
     } else {
       data.payload = null
     }
