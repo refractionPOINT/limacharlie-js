@@ -399,6 +399,19 @@ class Manager {
     return data.logs
   }
 
+  async getInsightLogOriginal(payloadID) {
+    let params = {}
+    let data = await this._apiCall(`insight/${this._oid}/logs/originals/${payloadID}`, "GET", params)
+
+    if(data.payload) {
+      data.payload = await this._unzip(Buffer.from(data.payload, "base64"))
+    } else {
+      data.payload = null
+    }
+
+    return data
+  }
+
   async getInsightLogFlow(flowID, start, end, with_raw) {
     let params = {
       start: start,
