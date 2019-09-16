@@ -33,7 +33,7 @@ class Manager {
     this.onError = onError
 
     if(this._isInteractive) {
-      this.refreshSpout()
+      this._spout = new Spout(this, "event", null, null, this._invId, null, null, null, true)
     }
     this.payloads = new Payloads(this)
   }
@@ -146,26 +146,6 @@ class Manager {
         resolve(buffer.toString(isBinary ? 'binary' : 'utf8'))
       })
     })
-  }
-
-  refreshSpout() {
-    if(!this._isInteractive) {
-      return
-    }
-
-    // We use a temporary variable so we can do a hot swap and never
-    // be without an active spout.
-    let tmpSpout = this._spout
-    this._spout = new Spout(this, "event", null, null, this._invId, null, null, null)
-
-    if(tmpSpout) {
-      // Move over the registrations in the previous spout to the new one.
-      this._spout._specificCallbacks = tmpSpout._specificCallbacks
-
-      // Now we can close it down safely.
-      tmpSpout.shutdown()
-      tmpSpout = null
-    }
   }
 
   shutdown() {

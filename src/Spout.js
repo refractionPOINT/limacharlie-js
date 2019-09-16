@@ -2,8 +2,9 @@ const request = require("request")
 const JSONStream = require("JSONStream")
 
 class Spout {
-  constructor(man, dataType, dataCb, errorCb, invId, tag, cat, sid) {
+  constructor(man, dataType, dataCb, errorCb, invId, tag, cat, sid, isReOpen) {
     this._man = man
+    this._errorCb =errorCb
     this._dataType = dataType
     this._invId = invId
     this._tag = tag
@@ -16,6 +17,15 @@ class Spout {
     this._specificCallbacks = {}
     this._cleanupTimer = setInterval(() => {this._cleanup()}, 30000)
 
+    this._isRetrying = false
+    this._refreshSpout()
+  }
+
+  _sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  async _refreshSpout(isRetry) {
     let url = `https://stream.limacharlie.io/${this._man._oid}`
     let spoutConf = {
       type: this._dataType,
@@ -58,9 +68,18 @@ class Spout {
           .on("data", data => {
             this._processData(data)
           })
-          .on("error", error => {
-            if(errorCb) {
-              errorCb(error)
+          .on("error", async error => {
+            if(this._isRetrying) {
+              return
+            }
+            this._isRetrying = true
+            this._stream.destroy()
+            if(isRetry) {
+              await this._sleep(1000 * 2)
+            }
+            await this._refreshSpout(true)
+            if(this._errorCb) {
+              this._errorCb(error)
             } else if(this._man.onError) {
               this._man.onError(error)
             } else {
@@ -69,8 +88,17 @@ class Spout {
             }
           })
       } catch(e) {
-        if(errorCb) {
-          errorCb(e)
+        if(this._isRetrying) {
+          return
+        }
+        this._isRetrying = true
+        this._stream.destroy()
+        if(isRetry) {
+          await this._sleep(1000 * 2)
+        }
+        await this._refreshSpout(true)
+        if(this._errorCb) {
+          this._errorCb(e)
         } else if(this._man.onError) {
           this._man.onError(e)
         } else {
@@ -82,9 +110,18 @@ class Spout {
       this._stream = request
         .post(url)
         .form(spoutConf)
-        .on("error", error => {
-          if(errorCb) {
-            errorCb(error)
+        .on("error", async error => {
+          if(this._isRetrying) {
+            return
+          }
+          this._isRetrying = true
+          this._stream.destroy()
+          if(isRetry) {
+            await this._sleep(1000 * 2)
+          }
+          await this._refreshSpout(true)
+          if(this._errorCb) {
+            this._errorCb(error)
           } else if(this._man.onError) {
             this._man.onError(error)
           } else {
@@ -96,9 +133,18 @@ class Spout {
         .on("data", data => {
           this._processData(data)
         })
-        .on("error", error => {
-          if(errorCb) {
-            errorCb(error)
+        .on("error", async error => {
+          if(this._isRetrying) {
+            return
+          }
+          this._isRetrying = true
+          this._stream.destroy()
+          if(isRetry) {
+            await this._sleep(1000 * 2)
+          }
+          await this._refreshSpout(true)
+          if(this._errorCb) {
+            this._errorCb(error)
           } else if(this._man.onError) {
             this._man.onError(error)
           } else {
@@ -107,6 +153,7 @@ class Spout {
           }
         })
     }
+    this._isRetrying = false
   }
   
   registerSpecificCallback(trackingId, ttl, cb) {
@@ -154,7 +201,7 @@ class Spout {
     }
     if(this._stream) {
       try {
-        this._stream.abort()
+        this._stream.destroy()
       } catch(e) {
         // eslint-disable-next-line no-console
         console.error(e)
