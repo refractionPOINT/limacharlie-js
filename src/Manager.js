@@ -56,7 +56,6 @@ class Manager {
       this._jwt = data.jwt
       return true
     } catch(e) {
-      this._jwt = null
       // eslint-disable-next-line no-console
       console.error(`Failed to refresh the JWT: ${e}`)
       return false
