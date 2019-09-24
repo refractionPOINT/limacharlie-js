@@ -228,6 +228,11 @@ class Manager {
     return data.events
   }
 
+  async deleteAllHistoricDetections() {
+    let data = await this._apiCall(`insight/${this._oid}/detections`, "DELETE", {}, false, false, 60 * 1000 * 10)
+    return data
+  }
+
   async getObjectInformation(objType, objName, params) {
     if(!params) {
       params = {}
