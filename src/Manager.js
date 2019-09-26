@@ -67,6 +67,9 @@ class Manager {
   }
 
   _restCall(url, verb, params, timeout, altRoot) {
+    if(!this._oid) {
+      return
+    }
     if(!timeout) {
       timeout = 10 * 1000
     }
