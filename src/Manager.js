@@ -126,7 +126,7 @@ class Manager {
       } else if(errMessage.includes("RequestError") && !isNoRetry) {
         // Looks like a failure to connect or at the gateway, just retry once.
         await this.sleep(1 * 1000)
-        return this._apiCall(url, verb, params, false)
+        return this._apiCall(url, verb, params, true)
       }
 
       if(this.onError) {
