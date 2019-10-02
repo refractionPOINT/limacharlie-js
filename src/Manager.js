@@ -10,6 +10,7 @@ const API_VERSION = "v1"
 
 const HTTP_UNAUTHORIZED = 401
 const HTTP_BAD_REQUEST = 400
+const HTTP_TOO_MANY_REQUESTS = 429
 
 class Manager {
   constructor(oid, secretApiKey, invId, isInteractive, jwt, onAuthFailure, onError) {
@@ -83,7 +84,7 @@ class Manager {
       method: verb,
       qsStringifyOptions: {arrayFormat: "repeat"},
       json: true,
-      timeout: 10 * 1000,
+      timeout: timeout,
     }
     if(verb === "GET") {
       req[ "qs" ] = params
@@ -118,11 +119,9 @@ class Manager {
           await this._refreshJWT()
         }
         return this._apiCall(url, verb, params, true)
-      } else if(e.statusCode === HTTP_BAD_REQUEST && !isNoRetry) {
-        if(errMessage.includes("quota")) {
-          await this.sleep(5 * 1000)
-          return this._apiCall(url, verb, params, false)
-        }
+      } else if(e.statusCode === HTTP_TOO_MANY_REQUESTS && !isNoRetry) {
+        await this.sleep(10 * 1000)
+        return this._apiCall(url, verb, params, false)
       } else if(errMessage.includes("RequestError") && !isNoRetry) {
         // Looks like a failure to connect or at the gateway, just retry once.
         await this.sleep(1 * 1000)
@@ -447,6 +446,12 @@ class Manager {
     return data
   }
 
+  async getFpRules() {
+    let req = {}
+    let data = await this._apiCall(`fp/${this._oid}`, "GET", req)
+    return data
+  }
+
   async getObjectsTimeline(objects, params) {
     if(!params) {
       params = {}
@@ -479,6 +484,14 @@ class Manager {
 
   async whoAmI() {
     let data = await this._apiCall(`who`, "GET", {}, false, false, null, ROOT_URL)
+    return data
+  }
+
+  async getSensorsOnline(sids) {
+    let params = {
+      'sids' : sids,
+    }
+    let data = await this._apiCall(`online/${this._oid}`, "POST", params)
     return data
   }
 }
