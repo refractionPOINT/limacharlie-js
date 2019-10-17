@@ -79,6 +79,14 @@ class Sensor {
     return this._info.plat === 0x50000000
   }
 
+  isChrome() {
+    if(!this._info) {
+      this.getInfo()
+      return null
+    }
+    return this._info.arch === 0x00000006
+  }
+
   async hostname() {
     if(!this._info) {
       await this.getInfo()
