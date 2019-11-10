@@ -338,11 +338,14 @@ class Manager {
     return new Job(this, data.job)
   }
 
-  async replicantRequest(replicantName, params, isSynchronous) {
+  async replicantRequest(replicantName, params, isSynchronous, timeout) {
+    if(!timeout) {
+      timeout = 30 * 1000
+    }
     let data = await this._apiCall(`replicant/${this._oid}/${replicantName}`, "POST", {
       request_data: btoa(JSON.stringify(params)),
       is_async: !isSynchronous,
-    }, false, false, 30 * 1000)
+    }, false, false, timeout)
     return data
   }
 
