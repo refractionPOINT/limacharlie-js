@@ -112,6 +112,9 @@ class Manager {
       } else {
         errMessage = e.toString()
       }
+      if(typeof errMessage != "string" && "error" in errMessage) {
+        errMessage = errMessage["error"]
+      }
       if(e.statusCode === HTTP_UNAUTHORIZED && !isNoRetry) {
         if(this.onAuthFailure) {
           await this.onAuthFailure()
