@@ -383,7 +383,7 @@ class Manager {
       with_raw: with_raw ? 'on' : 'off',
       is_compressed: 'true',
     }
-    let data = await this._apiCall(`insight/${this._oid}/logs/payloads/${payloadID}`, "GET", params, false, false, 30 * 1000)
+    let data = await this._apiCall(`insight/${this._oid}/logs/payloads/${payloadID}`, "GET", params, false, false, 60 * 1000)
 
     data.logs = await this._unzip(Buffer.from(data.logs, "base64"))
     data.logs = JSON.parse(data.logs)
@@ -393,7 +393,7 @@ class Manager {
 
   async getInsightLogOriginal(payloadID) {
     let params = {}
-    let data = await this._apiCall(`insight/${this._oid}/logs/originals/${payloadID}`, "GET", params, false, false, 30 * 1000)
+    let data = await this._apiCall(`insight/${this._oid}/logs/originals/${payloadID}`, "GET", params, false, false, 60 * 1000)
 
     if(data.payload) {
       data.payload = await this._unzip(Buffer.from(data.payload, "base64"), true)
