@@ -128,7 +128,7 @@ class Sensor {
     let data = await this._man._apiCall(`insight/${this._man._oid}/${this.sid}`, "GET", params)
     data.events = await this._man._unzip(Buffer.from(data.events, "base64"))
     data.events = JSON.parse(data.events)
-    return data.events
+    return data
   }
 
   async getSpecificEvent(atom, before) {
