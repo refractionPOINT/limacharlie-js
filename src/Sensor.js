@@ -47,6 +47,14 @@ class Sensor {
     return await this.task(tasks, trackingId)
   }
 
+  asAid() {
+    if(!this._info) {
+      this.getInfo()
+      return null
+    }
+    return `${this._info.oid}.${this._info.iid}.${this._info.sid}.${this._info.plat}.${this._info.arch}`
+  }
+
   isWindows() {
     if(!this._info) {
       this.getInfo()
