@@ -202,8 +202,14 @@ class Manager {
     return (await this._apiCall("events", "GET")).events
   }
 
-  async getAutoComplete() {
-    return await this._apiCall("autocomplete/task", "GET")
+  async getAutoComplete(aid) {
+    let params = null
+    if(aid) {
+      params = {
+        aid: aid,
+      }
+    }
+    return await this._apiCall("autocomplete/task", "GET", params)
   }
 
   async getSensorsWithHostname(hostnamePrefix) {
