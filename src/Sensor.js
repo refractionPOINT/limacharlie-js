@@ -52,7 +52,7 @@ class Sensor {
       this.getInfo()
       return null
     }
-    return `${this._info.oid}.${this._info.iid}.${this._info.sid}.${this._info.plat}.${this._info.arch}`
+    return `${this._info.oid}.${this._info.iid}.${this._info.sid}.${this._info.plat.toString(16)}.${this._info.arch}`
   }
 
   isWindows() {
