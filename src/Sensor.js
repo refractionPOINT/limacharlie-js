@@ -52,7 +52,7 @@ class Sensor {
       this.getInfo()
       return null
     }
-    return `${this._info.oid}.${this._info.iid}.${this._info.sid}.${this._info.plat}.${this._info.arch}`
+    return `${this._info.oid}.${this._info.iid}.${this._info.sid}.${this._info.plat.toString(16)}.${this._info.arch}`
   }
 
   isWindows() {
@@ -139,6 +139,10 @@ class Sensor {
     return data
   }
 
+  getHistoricEventsGenerator(start, end, limit, eventType, isBackwards) {
+    return new EventsGenerator(this, start, end, limit, eventType, isBackwards)
+  }
+
   async getSpecificEvent(atom, before) {
     let data = await this._man._apiCall(`insight/${this._man._oid}/${this.sid}/${atom}`, "GET", {
       before: before,
@@ -153,6 +157,51 @@ class Sensor {
 
   async getTrafficStats(start, end) {
     return await this._man.getTrafficStats(start, end, this.sid)
+  }
+}
+
+class EventsGenerator {
+  constructor(sensor, start, end, limit, eventType, isBackwards) {
+    this._sensor = sensor
+    this._start = start
+    this._end = end
+    this._limit = limit
+    this._eventType = eventType
+    this._cursor = "-"
+    this._ready = []
+    this._isForwards = !isBackwards
+  }
+
+  async next() {
+    if(this._ready.length !== 0) {
+      return this._ready.shift()
+    }
+    if(!this._cursor) {
+      return null
+    }
+    let params = {
+      is_compressed: "true",
+      cursor: this._cursor,
+      is_forward: this._isForwards,
+    }
+    if(this._start) {
+      params["start"] = this._start
+    }
+    if(this._end) {
+      params["end"] = this._end
+    }
+    if(this._limit) {
+      params["limit"] = this._limit
+    }
+    if(this._eventType) {
+      params["event_type"] = this._eventType
+    }
+    let data = await this._sensor._man._apiCall(`insight/${this._sensor._man._oid}/${this._sensor.sid}`, "GET", params)
+    let events = await this._sensor._man._unzip(Buffer.from(data.events, "base64"))
+    events = JSON.parse(events)
+    this._cursor = data.next_cursor
+    this._ready = events
+    return this._ready.shift()
   }
 }
 
