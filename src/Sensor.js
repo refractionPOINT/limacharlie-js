@@ -196,11 +196,16 @@ class EventsGenerator {
     if(this._eventType) {
       params["event_type"] = this._eventType
     }
-    let data = await this._sensor._man._apiCall(`insight/${this._sensor._man._oid}/${this._sensor.sid}`, "GET", params)
-    let events = await this._sensor._man._unzip(Buffer.from(data.events, "base64"))
-    events = JSON.parse(events)
-    this._cursor = data.next_cursor
-    this._ready = events
+    while(this._cursor) {
+        let data = await this._sensor._man._apiCall(`insight/${this._sensor._man._oid}/${this._sensor.sid}`, "GET", params)
+        let events = await this._sensor._man._unzip(Buffer.from(data.events, "base64"))
+        events = JSON.parse(events)
+        this._cursor = data.next_cursor
+        this._ready = events
+        if(this._ready.length !== 0) {
+          break
+        }
+    }
     return this._ready.shift()
   }
 }
