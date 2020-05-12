@@ -383,7 +383,7 @@ class Manager {
       params["cursor"] = cursor
     }
     let data = await this._apiCall(`insight/${this._oid}/logs`, "GET", params)
-    return data.logs
+    return data
   }
 
   async getInsightLogPayload(payloadID, records, with_raw) {
