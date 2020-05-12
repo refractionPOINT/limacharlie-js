@@ -368,7 +368,7 @@ class Manager {
     return data
   }
 
-  async getInsightLogs(start, end, source, hint) {
+  async getInsightLogs(start, end, source, hint, cursor) {
     let params = {
       start: start,
       end: end,
@@ -378,6 +378,9 @@ class Manager {
     }
     if(hint) {
       params["hint"] = hint
+    }
+    if(cursor) {
+      params["cursor"] = cursor
     }
     let data = await this._apiCall(`insight/${this._oid}/logs`, "GET", params)
     return data.logs
