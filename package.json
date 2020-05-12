@@ -1,6 +1,6 @@
 {
   "name": "limacharlie",
-  "version": "1.20.16",
+  "version": "1.20.17",
   "description": "An API for limacharlie.io, a cloud hosted endpoint detection and response platform.",
   "main": "lib/index.js",
   "scripts": {
