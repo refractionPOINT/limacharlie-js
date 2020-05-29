@@ -170,6 +170,16 @@ class Spout {
       } else if(data.__trace === "connected") {
         this.hasConnected = true
       }
+    } else if(Object.keys(data).length === 1 && "error" in data) {
+      let error = data.error
+      if(this._errorCb) {
+        this._errorCb(error)
+      } else if(this._man.onError) {
+        this._man.onError(error)
+      } else {
+        // eslint-disable-next-line no-console
+        console.error(error)
+      }
     } else {
       let tracking = data.routing.investigation_id
       if(tracking && (tracking in this._specificCallbacks)) {
