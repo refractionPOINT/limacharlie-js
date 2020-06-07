@@ -400,8 +400,10 @@ class Manager {
     return data.logs
   }
 
-  async getInsightLogOriginal(payloadID) {
-    let params = {}
+  async getInsightLogOriginal(payloadID, params) {
+    if(!params) {
+      params = {}
+    }
     let data = await this._apiCall(`insight/${this._oid}/logs/originals/${payloadID}`, "GET", params, false, false, 60 * 1000)
 
     if(data.payload) {
