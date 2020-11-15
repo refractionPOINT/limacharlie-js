@@ -95,6 +95,14 @@ class Sensor {
     return this._info.arch === 0x00000006
   }
 
+  isVPN() {
+    if(!this._info) {
+      this.getInfo()
+      return null
+    }
+    return this._info.plat === 0x70000000
+  }
+
   async hostname() {
     if(!this._info) {
       await this.getInfo()
